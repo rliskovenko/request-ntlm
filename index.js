@@ -1,16 +1,19 @@
 var async = require('async');
 var request = require('request');
 var ntlm = require('./lib/ntlm');
-var KeepAlive = require('agentkeepalive');
+var Agentkeepalive = require('agentkeepalive');
 var _ = require('lodash');
 
 var makeRequest = function(method, options, params, callback) {
-  
+  var KeepAliveClass;
+
   if (options.url.toLowerCase().indexOf('https://') === 0) {
-    KeepAlive = KeepAlive.HttpsAgent;
+    KeepAliveClass = Agentkeepalive.HttpsAgent;
+  } else {
+    KeepAliveClass = Agentkeepalive;
   }
 
-  var keepaliveAgent = new KeepAlive();
+  var keepaliveAgent = new KeepAliveClass();
 
   if (!options.workstation) options.workstation = '';
   if (!options.ntlm_domain) options.ntlm_domain = '';
