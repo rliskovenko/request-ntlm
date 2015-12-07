@@ -4,24 +4,29 @@
   "description": "NTLM auth for NodeJS - continued from Colyn Brown's project",
   "main": "index.js",
   "repository": "https://github.com/rliskovenko/request-ntlm",
-  "contributors": [{
-    "name": "Colyn Brown",
-    "email": "clbrown@godaddy.com"
-  },{
-    "name": "Immanuel Hayden",
-    "email": "immanuel.hayden@gmail.com"
-  },{
-    "name": "Brett Profitt",
-    "email": "brett.profitt@gmail.com"
-  },{
-    "name": "Roman V. Liskovenko",
-    "email": "rliskovenko@gmail.com"
-  }],
+  "contributors": [
+    {
+      "name": "Colyn Brown",
+      "email": "clbrown@godaddy.com"
+    },
+    {
+      "name": "Immanuel Hayden",
+      "email": "immanuel.hayden@gmail.com"
+    },
+    {
+      "name": "Brett Profitt",
+      "email": "brett.profitt@gmail.com"
+    },
+    {
+      "name": "Roman V. Liskovenko",
+      "email": "rliskovenko@gmail.com"
+    }
+  ],
   "license": "ISC",
   "dependencies": {
-    "agentkeepalive": "^2.0.3",
-    "async": "^0.7.0",
-    "lodash": "^2.4.1",
-    "request": "^2.34.0"
+    "agentkeepalive": "2.0.3",
+    "async": "0.7.0",
+    "lodash": "2.4.2",
+    "request": "2.67.0"
   }
 }
