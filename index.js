@@ -1,11 +1,15 @@
-var async = require('async');
-var request = require('request');
-var ntlm = require('./lib/ntlm');
-var Agentkeepalive = require('agentkeepalive');
-var _ = require('lodash');
+var async = require('async' ),
+    request = require('request' ),
+    _ = require('lodash' ),
+    Agentkeepalive = require('agentkeepalive' ),
+    ntlm = require('./lib/ntlm' );
 
 var makeRequest = function(method, options, params, callback) {
-  var KeepAliveClass;
+  var KeepAliveOptions = {
+        'Connection'        : 'Keep-Alive',
+        'Proxy-Connection'  : 'Keep-Alive'
+      },
+      KeepAliveClass;
 
   if (options.url.toLowerCase().indexOf('https://') === 0) {
     KeepAliveClass = Agentkeepalive.HttpsAgent;
@@ -13,7 +17,7 @@ var makeRequest = function(method, options, params, callback) {
     KeepAliveClass = Agentkeepalive;
   }
 
-  var keepaliveAgent = new KeepAliveClass();
+  options.agent = options.agent || new KeepAliveClass();
 
   if (!options.workstation) options.workstation = '';
   if (!options.ntlm_domain) options.ntlm_domain = '';
@@ -22,36 +26,35 @@ var makeRequest = function(method, options, params, callback) {
   function startAuth($) {
     var type1msg = ntlm.createType1Message(options);
     options.method = method;
-    _.extend( options.headers, {
-      'Connection'        : 'Keep-Alive',
-      'Proxy-Connection'  : 'Keep-Alive',
+    _.extend( options.headers, KeepAliveOptions, {
       'Authorization'     : type1msg
     } );
-    options.agent = options.agent || keepaliveAgent;
+
     request(options, $);
   }
 
   function requestComplete(res, body, $) {
-    if (!res.headers['www-authenticate'])
+    if ( !res.headers['www-authenticate'] )
       return $(new Error('www-authenticate not found on response of second request'));
 
-    var type2msg = ntlm.parseType2Message(res.headers['www-authenticate']);
-    var type3msg = ntlm.createType3Message(type2msg, options);
-    options.method = method;
-    _.extend( options.headers, {
-      'Connection'        : 'Keep-Alive',
-      'Proxy-Connection'  : 'Keep-Alive',
-      'Authorization'     : type3msg
+    var type2msg = ntlm.parseType2Message( res.headers['www-authenticate'], function ( err ) {
+      if ( err ) {
+        $( err, null );
+      } else {
+        var type3msg = ntlm.createType3Message( type2msg, options );
+        options.method = method;
+        _.extend( options.headers, KeepAliveOptions, {
+          'Authorization'     : type3msg
+        } );
+
+        if (typeof body == "string")
+          options.body = body;
+        else
+          options.json = body;
+
+        request(options, $);
+      }
     } );
-
-    options.agent = options.agent || keepaliveAgent;
-
-    if (typeof params == "string")
-      options.body = params;
-    else
-      options.json = params;
-
-    request(options, $);
   }
 
   async.waterfall([startAuth, requestComplete], callback);
